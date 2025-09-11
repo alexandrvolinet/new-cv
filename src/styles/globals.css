@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('../assets/fonts/roboto/Roboto-VariableFont_wdth,wght.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Viga';
+  src: url('../assets/fonts/viga/Viga-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+    --text: #ffffff;
+    --grey: #cfcfcf;
+  }
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    color: var(--text);
+  }
+
+  h1 {
+    font-family: 'Viga', sans-serif;
+    color: var(--text);
+    font-size: clamp(3rem, 7vw, 8rem);
+    margin-left: -6px;
+  }
+
+.app {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.shadow {
+  opacity: 0.5;
+  background-color:black;
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.animation_content {
+  position:absolute;
+}
+
+.swiper-scrollbar {
+  display: block !important;
+  width: 35% !important;
+  height: 1px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 36px;
+  opacity: 0.6;
+  left: 0;
+  right: 0;
+  background-color: var(--text);
+}
+.swiper-scrollbar-drag {
+  height: 8px;
+  background-color: var(--grey);
+  bottom: 2px;
+  top: initial;
+}
+
+.swiper-button-prev, .swiper-button-next {
+    color: var(--text);
+    bottom: 19px !important;
+}
+.swiper-button-prev {
+    left: var(--swiper-navigation-sides-offset, 5%);
+    right: auto;
+    top: initial;
+    cursor: pointer;
+}
+
+.swiper-button-next {
+    right: var(--swiper-navigation-sides-offset, 5%);
+    left: auto;
+    top: initial;
+    cursor: pointer;
+}
+
+
+@keyframes scale-up4 {
+  20% {
+    transform: scaleY(1.5);
+  }
+  40% {
+    transform: scaleY(1);
+  }
+}
+
+.animation-delay-250 {
+  animation-delay: 0.25s;
+}
+
+.animation-delay-500 {
+  animation-delay: 0.5s;
+}
+
+.bg-cuboid-glow {
+  background: #e0e7ff; 
+  box-shadow: 0 0 10px #e0e7ff,
+              0 0 20px #4c3fff,
+              0 0 40px #0400ff;
+}
