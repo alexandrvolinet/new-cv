@@ -82,9 +82,9 @@ function ShaderPlane({ onReady }: { onReady?: () => void }) {
   const [zOffset, setZOffset] = useState(2.0);
 
   useEffect(() => {
-    const value = size.width < 600 ? 3.5 
-                : size.width < 1000 ? 3.0 
-                : 2.0;
+    const value = size.width < 600 ? 3.5
+      : size.width < 1000 ? 3.0
+        : 2.0;
     setZOffset(value);
   }, [size.width]);
 
@@ -102,8 +102,10 @@ function ShaderPlane({ onReady }: { onReady?: () => void }) {
   }, [zOffset]);
 
   useEffect(() => {
-    if (materialRef.current && onReady) {
-      onReady(); 
+    if (materialRef.current) {
+      if (onReady) onReady();
+
+      window.dispatchEvent(new Event("shaderReady"));
     }
   }, [onReady]);
 

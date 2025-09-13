@@ -3,19 +3,28 @@
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import Preloader from '@/components/shared/Preloader'
+import StickyPin from '@/lib/animations/StickyPin'
 
 const Cuboid = dynamic(() => import('@/components/ui/shaders/Cuboid'), {
   ssr: false,
+  loading: () => <div className="w-full h-screen bg-gray-100" />
 })
+
+const HeroSection = dynamic(() => import('@/app/(main)/home/heroSection/Hero'))
 
 export default function Page() {
   const [loading, setLoading] = useState(true)
 
   return (
-    <main>
+    <div>
       {loading && <Preloader />}
-      <Cuboid onReady={() => setLoading(false)} />
 
-    </main>
+      <StickyPin>
+        <Cuboid onReady={() => setLoading(false)} />
+      </StickyPin>
+      
+      <HeroSection />
+
+    </div>
   )
 }
