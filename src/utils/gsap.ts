@@ -1,4 +1,3 @@
-// utils/gsap.ts
 'use client'
 
 import { gsap } from 'gsap'

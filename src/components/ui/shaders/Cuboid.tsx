@@ -1,10 +1,15 @@
-'use client'
+"use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useRef, useEffect, useState } from "react";
-import * as THREE from "three";
+import { useEffect, useRef, useState } from "react";
 
-const fragmentShader = `
+const vertexShaderSource = `
+  attribute vec4 a_position;
+  void main() {
+    gl_Position = a_position;
+  }
+`;
+
+const fragmentShaderSource = `
 precision highp float;
 
 uniform vec2 iResolution;
@@ -21,9 +26,13 @@ float D(vec3 p) {
   p.xy *= R;
   p.xz *= R;
   vec3 S = sin(123. * p);
-  G = min(G, max(abs(length(p) - 0.6),
-    d = pow(dot(p*=p*p*p, p), 0.125) - 0.5
-      - pow(1.0 + S.x*S.y*S.z, 8.0) / 1e5));
+  
+  vec3 p_temp = p * p * p * p; // p^4
+  float new_d = pow(dot(p_temp, p_temp), 0.125) - 0.5
+      - pow(1.0 + S.x*S.y*S.z, 8.0) / 1e5;
+  
+  G = min(G, max(abs(length(p) - 0.6), new_d));
+  d = new_d;
   return d;
 }
 
@@ -38,9 +47,12 @@ void mainImage(out vec4 o, vec2 fragCoord) {
   float a = 0.1 * iTime;
   R = mat2(cos(a), -sin(a), sin(a), cos(a));
 
-  for(; z < 9.0 && d > M; z += D(p)) {
+  z = 0.0;
+  for(int iter = 0; iter < 100; iter++) {
+    if(z >= 9.0 || d <= M) break;
     p = z * I;
     p.z -= uZOffset;
+    z += D(p);
   }
 
   if(z < 9.0) {
@@ -53,9 +65,11 @@ void mainImage(out vec4 o, vec2 fragCoord) {
     O = normalize(O);
     r = reflect(I, O);
     vec2 C2 = (p + r * (5.0 - p.y) / abs(r.y)).xz;
+    
+    float dist = sqrt(dot(C2, C2)) + 1.0;
     O = z * z * (
       r.y > 0.0
-        ? 500.0 * smoothstep(5.0, 4.0, d = sqrt(dot(C2, C2)) + 1.0) * d * B
+        ? 500.0 * smoothstep(5.0, 4.0, dist) * dist * B
         : exp(-2.0 * length(C2)) * (B / M - 1.0)
     ) + pow(1.0 + O.y, 5.0) * B;
   }
@@ -70,68 +84,168 @@ void main() {
 }
 `;
 
-const vertexShader = `
-void main() {
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`;
-
-function ShaderPlane({ onReady }: { onReady?: () => void }) {
-  const materialRef = useRef<THREE.ShaderMaterial>(null!);
-  const { size, viewport } = useThree();
-  const [zOffset, setZOffset] = useState(2.0);
-
-  useEffect(() => {
-    const value = size.width < 600 ? 3.5
-      : size.width < 1000 ? 3.0
-        : 2.0;
-    setZOffset(value);
-  }, [size.width]);
-
-  useFrame(({ clock, size }) => {
-    if (materialRef.current) {
-      materialRef.current.uniforms.iTime.value = clock.getElapsedTime();
-      materialRef.current.uniforms.iResolution.value.set(size.width, size.height);
-    }
-  });
-
-  useEffect(() => {
-    if (materialRef.current) {
-      materialRef.current.uniforms.uZOffset.value = zOffset;
-    }
-  }, [zOffset]);
-
-  useEffect(() => {
-    if (materialRef.current) {
-      if (onReady) onReady();
-
-      window.dispatchEvent(new Event("shaderReady"));
-    }
-  }, [onReady]);
-
-  return (
-    <mesh scale={[viewport.width, viewport.height, 1]}>
-      <planeGeometry args={[1, 1]} />
-      <shaderMaterial
-        ref={materialRef}
-        fragmentShader={fragmentShader}
-        vertexShader={vertexShader}
-        uniforms={{
-          iTime: { value: 0 },
-          iResolution: { value: new THREE.Vector2(size.width, size.height) },
-          uZOffset: { value: zOffset },
-        }}
-      />
-    </mesh>
-  );
+function createShader(gl: WebGLRenderingContext, type: number, source: string) {
+  const shader = gl.createShader(type);
+  if (!shader) return null;
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error("Shader compilation error:", gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+    return null;
+  }
+  return shader;
 }
 
-export default function Cuboid({ onReady }: { onReady?: () => void }) {
+function createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
+  const program = gl.createProgram();
+  if (!program) return null;
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error("Program linking error:", gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+    return null;
+  }
+  return program;
+}
+
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+interface CuboidProps {
+  onReady?: () => void;
+}
+
+export default function Cuboid({ onReady }: CuboidProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const zOffsetRef = useRef(0);
+  const isReadyCalledRef = useRef(false);
+  const animationStartTimeRef = useRef<number | null>(null);
+  const [maxZoomOut, setMaxZoomOut] = useState(3.0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setMaxZoomOut(window.innerWidth > 992 ? 2.0 : 3.0);
+    };
+
+    handleResize(); 
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const gl = canvas.getContext("webgl");
+    if (!gl) {
+      console.error("WebGL not supported");
+      onReady?.();
+      return;
+    }
+
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    
+    if (!vertexShader || !fragmentShader) {
+      onReady?.();
+      return;
+    }
+
+    const program = createProgram(gl, vertexShader, fragmentShader);
+    if (!program) {
+      onReady?.();
+      return;
+    }
+
+    const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    const timeUniformLocation = gl.getUniformLocation(program, "iTime");
+    const resolutionUniformLocation = gl.getUniformLocation(program, "iResolution");
+    const zOffsetUniformLocation = gl.getUniformLocation(program, "uZOffset");
+
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([
+        -1, -1,
+         1, -1,
+        -1,  1,
+        -1,  1,
+         1, -1,
+         1,  1
+      ]),
+      gl.STATIC_DRAW
+    );
+
+    const ANIMATION_DURATION = 4000;
+
+    function resizeCanvas() {
+      if (!canvas || !gl) return;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+
+    function render(time: number) {
+      if (!canvas) return;
+
+      if (animationStartTimeRef.current === null) {
+        animationStartTimeRef.current = time;
+      }
+
+      const elapsedTime = time - animationStartTimeRef.current;
+      const progress = Math.min(elapsedTime / ANIMATION_DURATION, 1.0);
+      
+      const easedProgress = easeInOutCubic(progress);
+      
+      zOffsetRef.current = easedProgress * maxZoomOut;
+
+      if (!gl) return;
+
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.useProgram(program);
+
+      gl.enableVertexAttribArray(positionAttributeLocation);
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+      gl.uniform1f(timeUniformLocation, time * 0.001);
+      gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
+      gl.uniform1f(zOffsetUniformLocation, zOffsetRef.current);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      if (!isReadyCalledRef.current) {
+        isReadyCalledRef.current = true;
+        onReady?.();
+      }
+
+      animationRef.current = requestAnimationFrame(render);
+    }
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    animationRef.current = requestAnimationFrame(render);
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [onReady, maxZoomOut]); 
+
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1 }}>
-      <Canvas orthographic dpr={[1, 2]}>
-        <ShaderPlane onReady={onReady} />
-      </Canvas>
-    </div>
+      <canvas ref={canvasRef} className="w-full h-full block" />
   );
 }

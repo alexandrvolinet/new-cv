@@ -18,7 +18,7 @@ export default function StickyPin({ children } : StickyPinProps) {
         scrollTrigger: {
           trigger: ".pinned",
           start: "top top",
-          end: "+=2000",
+          end: "+=4000",
           pin: true,
           pinSpacing: false,
           markers: true

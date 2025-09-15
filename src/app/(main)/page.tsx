@@ -11,6 +11,7 @@ const Cuboid = dynamic(() => import('@/components/ui/shaders/Cuboid'), {
 })
 
 const HeroSection = dynamic(() => import('@/app/(main)/home/heroSection/Hero'))
+// const TechSection = dynamic(() => import('@/app/(main)/home/techSection/Tech'))
 
 export default function Page() {
   const [loading, setLoading] = useState(true)
@@ -24,6 +25,7 @@ export default function Page() {
       </StickyPin>
       
       <HeroSection />
+      {/* <TechSection /> */}
 
     </div>
   )
