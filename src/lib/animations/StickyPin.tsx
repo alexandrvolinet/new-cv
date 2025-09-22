@@ -20,7 +20,7 @@ export default function StickyPin({ children } : StickyPinProps) {
           start: "top top",
           end: "+=4000",
           pin: true,
-          pinSpacing: false,
+          pinSpacing: true,
           markers: true
         }
       });

@@ -4,7 +4,7 @@ export const Header = () => {
 
     return (
 
-        <header className="absolute z-2 w-full bg-transparent">
+        <header className="absolute top-0 z-2 w-full bg-transparent">
             <div className="lg:mx-10 sm:mx-0 px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                     <div className="md:flex md:items-center md:gap-12">
