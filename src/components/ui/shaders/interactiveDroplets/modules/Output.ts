@@ -1,5 +1,3 @@
-/** @format */
-
 import * as THREE from "three";
 import Common from "./Common";
 import Pointer from "./Pointer";

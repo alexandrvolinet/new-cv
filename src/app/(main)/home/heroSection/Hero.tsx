@@ -1,65 +1,175 @@
-'use client'
+"use client";
+import React, { useRef, useEffect } from "react";
+import PrimaryButton from "@/components/ui/buttons/PrimaryButton";
+import SectionContainer from "@/components/ui/SectionContainer";
 
-import React, { useRef, useEffect } from 'react'
-import { gsap } from '@/utils/gsap'
+import { gsap } from "@/utils/gsap";
+import { SplitText } from "gsap-trial/SplitText";
+
+gsap.registerPlugin(SplitText);
 
 function Hero() {
-  const heroRef = useRef<HTMLElement>(null)
+  const devTextRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLSpanElement>(null);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const buttonRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
+    const mm = gsap.matchMedia();
     const ctx = gsap.context(() => {
-      gsap.to(heroRef.current, {
-        opacity: 1,
-        y: 0,
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: 'top 0%',
-          end: 'top -20%',
-          scrub: true,
-        }
-      })
-    })
+      const split = new SplitText(descriptionRef.current, {
+        type: "lines",
+        linesClass: "lineChild",
+      });
+      new SplitText(descriptionRef.current, { type: "lines", linesClass: "lineParent" });
 
-    return () => ctx.revert()
-  }, [])
+      gsap.fromTo(buttonRef.current,
+        {
+          x: 100,
+          opacity: 0
+        },
+        {
+          x: 0,
+          opacity: 1,
+          duration: 0.1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: devTextRef.current,
+            start: "bottom 80%",
+            toggleActions: "play none none reverse",
+          }
+        }
+      )
+
+      mm.add("(min-width: 768px)", () => {
+        gsap.fromTo(
+          devTextRef.current,
+          { rotationY: 100, transformOrigin: "left center", opacity: 0 },
+          {
+            rotationY: 0,
+            opacity: 1,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: devTextRef.current,
+              start: "bottom 80%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+
+        gsap.from(split.lines, {
+          yPercent: 100,
+          opacity: 0,
+          stagger: 0.15,
+          ease: "power3.out",
+          duration: 1,
+          scrollTrigger: {
+            trigger: devTextRef.current,
+            start: "bottom 80%",
+            toggleActions: "play none none reverse",
+          },
+        });
+
+      });
+
+      mm.add("(max-width: 767px)", () => {
+        gsap.fromTo(
+          devTextRef.current,
+          { rotationY: 100, transformOrigin: "left center", opacity: 0 },
+          {
+            rotationY: 0,
+            opacity: 1,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: devTextRef.current,
+              start: "bottom 39%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+
+        gsap.from(split.lines, {
+          yPercent: 80,
+          opacity: 0,
+          stagger: 0.12,
+          ease: "power3.out",
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: devTextRef.current,
+            start: "bottom 80%",
+            toggleActions: "play none none reverse",
+          },
+        });
+
+      });
+    });
+
+    return () => {
+      ctx.revert();
+      mm.revert();
+    };
+  }, []);
 
   return (
-    <section
-      ref={heroRef}
-      className='h-[300vh] flex flex-col items-center backdrop-blur-lg backdrop-brightness-75 opacity-0 translate-y-10 pt-72'
-    >
 
-      <div className=" text-center max-w-4xl">
+    <SectionContainer className="grid grid-cols-1 md:grid-cols-2 justify-end">
+      <div className="flex flex-col justify-end text-left space-y-6">
+        <span
+          ref={subtitleRef}
+          className="uppercase tracking-[0.3em] text-xs sm:text-sm md:text-base text-gray-400"
+        >
+          frontend
+        </span>
         <h1
-          className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent"
+          ref={devTextRef}
+          className="text-[clamp(2.5rem,10vw,7rem)] leading-[0.97] font-extrabold bg-gradient-to-r from-white via-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-sm"
         >
-          Front-End Developer
+          Web <br /> Developer
         </h1>
-
-        <h2
-          className="text-2xl md:text-3xl lg:text-4xl mt-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent font-semibold"
-        >
-          Code • Create • Innovate
-        </h2>
-
-        <p
-          className="text-lg md:text-xl lg:text-2xl mt-8 text-gray-300 leading-relaxed max-w-3xl mx-auto"
-        >
-          3+ years experience specializing in <span className="text-purple-400 font-semibold">Next.js</span>,{' '}
-          <span className="text-blue-400 font-semibold">TypeScript</span>, and modern web development.
-        </p>
-
-        <div className="flex gap-6 justify-center mt-12">
-          <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold text-white hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25">
-            View Projects
-          </button>
-          <button className="px-8 py-3 border border-white/30 rounded-full font-semibold text-white hover:bg-white/10 transition-all duration-300 transform hover:scale-105">
-            Contact Me
-          </button>
-        </div>
       </div>
-    </section>
-  )
+      <div className="flex flex-col justify-end items-start md:items-end text-left md:text-right space-y-8">
+        <p
+          ref={descriptionRef}
+          className="text-gray-200 text-[clamp(1rem,2.5vw,1.25rem)] leading-relaxed w-full md:w-11/12"
+        >
+          I&apos;m a <strong className="text-white">Web Developer</strong>{" "}
+          based in Moldova. I specialize in building modern, responsive
+          interfaces using
+          <span
+            className="text-pink-200 font-medium"
+          >
+            {" "}
+            Next.js (React)
+          </span>
+          ,{" "}
+          <span
+            className="text-blue-400 font-medium"
+          >
+            {" "}
+            TypeScript
+          </span>
+          ,{" "}
+          <span
+            className="text-green-400 font-medium"
+          >
+            {" "}
+            GSAP
+          </span>,{" "}
+          <span
+            className="text-blue-300 font-medium"
+          >
+            {" "}
+            Tailwind CSS
+          </span>{" "}
+          and cutting-edge technologies. Clean code, intuitive UX and
+          pixel-perfect design are my core focus.
+        </p>
+        <PrimaryButton ref={buttonRef} href="#projects" className="text-lg px-6 py-3">
+          View My Work →
+        </PrimaryButton>
+      </div>
+    </SectionContainer>
+  );
 }
 
-export default Hero
+export default Hero;

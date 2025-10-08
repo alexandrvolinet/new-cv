@@ -14,6 +14,15 @@
   font-display: swap;
 }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
+
 :root {
     --text: #ffffff;
     --grey: #cfcfcf;
@@ -51,43 +60,6 @@
   position:absolute;
 }
 
-.swiper-scrollbar {
-  display: block !important;
-  width: 35% !important;
-  height: 1px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 36px;
-  opacity: 0.6;
-  left: 0;
-  right: 0;
-  background-color: var(--text);
-}
-.swiper-scrollbar-drag {
-  height: 8px;
-  background-color: var(--grey);
-  bottom: 2px;
-  top: initial;
-}
-
-.swiper-button-prev, .swiper-button-next {
-    color: var(--text);
-    bottom: 19px !important;
-}
-.swiper-button-prev {
-    left: var(--swiper-navigation-sides-offset, 5%);
-    right: auto;
-    top: initial;
-    cursor: pointer;
-}
-
-.swiper-button-next {
-    right: var(--swiper-navigation-sides-offset, 5%);
-    left: auto;
-    top: initial;
-    cursor: pointer;
-}
-
 
 @keyframes scale-up4 {
   20% {
@@ -112,3 +84,4 @@
               0 0 20px #4c3fff,
               0 0 40px #0400ff;
 }
+

@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import Preloader from '@/components/shared/Preloader'
+import ShaderBlurContainer from "@/components/ui/ShaderBlurContainer";
 import StickyPin from '@/lib/animations/StickyPin'
 
 const Cuboid = dynamic(() => import('@/components/ui/shaders/Cuboid'), {
@@ -11,7 +12,7 @@ const Cuboid = dynamic(() => import('@/components/ui/shaders/Cuboid'), {
 })
 
 const HeroSection = dynamic(() => import('@/app/(main)/home/heroSection/Hero'))
-// const TechSection = dynamic(() => import('@/app/(main)/home/techSection/Tech'))
+const TechSection = dynamic(() => import('@/app/(main)/home/techSection/Tech'))
 
 export default function Page() {
   const [loading, setLoading] = useState(true)
@@ -23,9 +24,11 @@ export default function Page() {
       <StickyPin>
         <Cuboid onReady={() => setLoading(false)} />
       </StickyPin>
-      
-      <HeroSection />
-      {/* <TechSection /> */}
+
+      <ShaderBlurContainer>
+        <HeroSection />
+        <TechSection />
+      </ShaderBlurContainer>
 
     </div>
   )

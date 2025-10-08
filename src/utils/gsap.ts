@@ -1,16 +1,21 @@
 'use client'
 
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
+import { gsap } from "gsap-trial"
+import { ScrollTrigger } from "gsap-trial/ScrollTrigger"
+import { ScrollToPlugin } from "gsap-trial/ScrollToPlugin"
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
+
+gsap.registerPlugin(
+  ScrollTrigger,
+  ScrollToPlugin,
+)
 
 function setupGlobalRefresh() {
-  const refresh = () => ScrollTrigger.refresh()
+  const refresh = () => {
+    ScrollTrigger.refresh()
+  }
 
   window.addEventListener('load', refresh)
-
   window.addEventListener('shaderReady', refresh)
 }
 
