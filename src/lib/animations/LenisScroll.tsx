@@ -2,6 +2,7 @@
 import { FC, useEffect, useRef } from "react";
 import Lenis from "lenis";
 
+export let lenis: Lenis | null = null;
 type LenisScrollProps = {
   children: React.ReactNode;
 };
@@ -16,6 +17,8 @@ const LenisScroll: FC<LenisScrollProps> = ({ children }) => {
       smoothWheel: true,
     });
 
+    lenis = lenisRef.current;
+
     const raf = (time: number) => {
       lenisRef.current?.raf(time);
       requestAnimationFrame(raf);
@@ -24,9 +27,8 @@ const LenisScroll: FC<LenisScrollProps> = ({ children }) => {
     requestAnimationFrame(raf);
 
     return () => {
-      if (lenisRef.current) {
-        lenisRef.current.destroy();
-      }
+      lenisRef.current?.destroy();
+      lenis = null;
     };
   }, []);
 

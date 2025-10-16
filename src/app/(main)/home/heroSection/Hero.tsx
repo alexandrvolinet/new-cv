@@ -2,7 +2,6 @@
 import React, { useRef, useEffect } from "react";
 import PrimaryButton from "@/components/ui/buttons/PrimaryButton";
 import SectionContainer from "@/components/ui/SectionContainer";
-
 import { gsap } from "@/utils/gsap";
 import { SplitText } from "gsap-trial/SplitText";
 
@@ -113,7 +112,7 @@ function Hero() {
   return (
 
     <SectionContainer className="grid grid-cols-1 md:grid-cols-2 justify-end">
-      <div className="flex flex-col justify-end text-left space-y-6">
+      <div className="flex flex-col justify-end text-left space-y-4">
         <span
           ref={subtitleRef}
           className="uppercase tracking-[0.3em] text-xs sm:text-sm md:text-base text-gray-400"
@@ -122,7 +121,7 @@ function Hero() {
         </span>
         <h1
           ref={devTextRef}
-          className="text-[clamp(2.5rem,10vw,7rem)] leading-[0.97] font-extrabold bg-gradient-to-r from-white via-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-sm"
+          className="text-[clamp(2.5rem,10vw,7rem)] leading-[1] font-extrabold bg-gradient-to-r from-white via-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-sm"
         >
           Web <br /> Developer
         </h1>

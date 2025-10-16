@@ -31,7 +31,7 @@ function ShaderBlurContainer({ children }: ShaderBlurContainerProps) {
     }, []);
 
     return (
-        <div ref={heroRef} className="relative h-[300vh] w-full overflow-hidden supports-[backdrop-filter]:backdrop-blur-lg backdrop-brightness-75 opacity-0">
+        <div ref={heroRef} className="relative h-[500vh] w-full overflow-hidden supports-[backdrop-filter]:backdrop-blur-lg backdrop-brightness-75 opacity-0">
             {children}
         </div>
     )
